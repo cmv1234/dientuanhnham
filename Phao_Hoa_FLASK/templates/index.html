@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>🎆 Pháo Hoa Nâng Cao</title>
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    background: black;
+    overflow: hidden;
+}
+canvas { display: block; }
+h1 {
+    position: fixed;
+    top: 10px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-family: Arial;
+    letter-spacing: 4px;
+}
+</style>
+</head>
+<body>
+
+<h1>🎆 HAPPY NEW YEAR 🎆</h1>
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+window.onresize = () => {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+};
+
+class Particle {
+    constructor(x, y, vx, vy, color) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.life = 100;
+        this.color = color;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.05;
+        this.life--;
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+    }
+}
+
+let particles = [];
+
+function randomColor() {
+    return `hsl(${Math.random() * 360},100%,50%)`;
+}
+
+/* 💥 Pháo hoa thường */
+function explode(x, y) {
+    for (let i = 0; i < 80; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 5;
+        particles.push(new Particle(
+            x, y,
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed,
+            randomColor()
+        ));
+    }
+}
+
+/* ❤️ Pháo hoa hình TRÁI TIM */
+function heartFirework(x, y) {
+    for (let t = 0; t < Math.PI * 2; t += 0.1) {
+        const px = 16 * Math.pow(Math.sin(t), 3);
+        const py = -(13 * Math.cos(t) - 5 * Math.cos(2*t)
+                   - 2 * Math.cos(3*t) - Math.cos(4*t));
+        particles.push(new Particle(
+            x, y,
+            px * 0.3,
+            py * 0.3,
+            "pink"
+        ));
+    }
+}
+
+/* ⭐ Pháo hoa hình NGÔI SAO */
+function starFirework(x, y) {
+    for (let i = 0; i < 5; i++) {
+        let angle = i * (Math.PI * 2 / 5);
+        for (let j = 0; j < 20; j++) {
+            particles.push(new Particle(
+                x, y,
+                Math.cos(angle) * j * 0.3,
+                Math.sin(angle) * j * 0.3,
+                "yellow"
+            ));
+        }
+    }
+}
+
+/* 🔤 Pháo hoa tạo CHỮ */
+function textFirework(text) {
+    ctx.font = "80px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText(text, canvas.width/2 - 300, canvas.height/2);
+
+    const img = ctx.getImageData(0,0,canvas.width,canvas.height);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    for (let y = 0; y < img.height; y += 6) {
+        for (let x = 0; x < img.width; x += 6) {
+            const i = (y * img.width + x) * 4;
+            if (img.data[i+3] > 150) {
+                particles.push(new Particle(
+                    x, y,
+                    (Math.random()-0.5)*3,
+                    (Math.random()-0.5)*3,
+                    randomColor()
+                ));
+            }
+        }
+    }
+}
+
+/* 🖱 CLICK BẮN PHÁO */
+canvas.addEventListener("click", e => {
+    const type = Math.floor(Math.random() * 3);
+    if (type === 0) explode(e.clientX, e.clientY);
+    if (type === 1) heartFirework(e.clientX, e.clientY);
+    if (type === 2) starFirework(e.clientX, e.clientY);
+});
+
+/* 🎬 ANIMATION */
+function animate() {
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    particles.forEach((p,i) => {
+        p.update();
+        p.draw();
+        if (p.life <= 0) particles.splice(i,1);
+    });
+    requestAnimationFrame(animate);
+}
+
+/* 🚀 AUTO BẮN */
+setInterval(() => explode(
+    Math.random()*canvas.width,
+    Math.random()*canvas.height/2
+), 800);
+
+/* 🎉 CHỮ */
+setTimeout(() => textFirework("HAPPY NEW YEAR"), 2000);
+
+animate();
+</script>
+
+</body>
+</html>
